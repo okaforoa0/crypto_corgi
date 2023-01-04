@@ -1,0 +1,163 @@
+from bakery import assert_equal
+
+# Copy over existing code from earlier parts of the project
+def convert_str(text: str) -> list[int]:
+    """
+    This function consumes a message in the form of a str, and converts it to a list of int using the built-in ord function.
+    
+    Args:
+    text (str): A message that we want to convert to a list of int.
+    
+    Returns:
+    list[int]: The converted message. 
+    """
+    new_list = []
+    for item in text:
+        new_list.append(ord(item))
+    return new_list
+def convert_int(text: list[int]) -> str:
+    """
+    This function consumes a message in the form of a list of int, and converts it to a str.
+    
+    Args:
+    text (list[int]): A message that we want to convert to a str.
+    
+    Returns:
+    str: The converted message.
+    """
+    message = ""
+    for item in text:
+        message += chr(item)
+    return message
+def rotate_int(rotated: list[int], rotation_amount:int) -> list[int]:
+    """
+    This function consumes a list of int that needs to be rotated by the rotation amount which is an int.
+    
+    Args:
+    rotated (list[int]): The list of integers that we need to rotate by the rotation amount.
+    rotation_amount (int): THe amount that we are rotating the list of integers by.
+    
+    Returns:
+    list[int]: The list of int that has been rotated. 
+    """
+    new_list = []
+    for item in rotated:
+        new_list.append((item+rotation_amount-32) % 94 + 32)  
+    return new_list
+def insert_tilda(text: list[int]) -> list[int]:
+    """
+    This function consumes a list of int and inserts tildas into that list.
+    
+    Args:
+    text (list[int]): The list of int that we want insert the tildas in.
+    
+    Returns:
+    list[int]: The list of int including the tildas.
+    """
+    new_list = []
+    for item in text:
+        new_list.append(item)
+        if item < 48:
+            new_list.append(126)
+    return new_list
+def encrypt_text(message: str, rotation_amount: int) ->str:
+    """
+    This functions consumes a message in the form of a str, and rotates it by the rotation amount which is in the form of an int.
+    
+    Args:
+    message(str): The message that we need to rotate by the rotation amount.
+    rotation_amount (int): The amount that we are rotating the message by. 
+    
+    Returns:
+    str: The message that has been rotated by the rotated amount.
+    """
+    text = convert_str(message)
+    text = rotate_int(text, rotation_amount)
+    text = insert_tilda(text)
+    return convert_int(text)
+def decrypt_text(message: str, rotation_amount: int) ->str:
+    """
+    This function consumes a message in the form of a str, and rotates it by the rotation amount which is in the form of an int.
+    
+    Args:
+    message(str): The message that we need to rotate by the rotation amount.
+    rotation_amount (int): The amount that we are rotating the message by. 
+    
+    Returns:
+    str: The message that has been rotated by the rotated amount.
+    """
+    text = convert_str(message)
+    new_list = []
+    for item in text:
+        if item != 126:
+            new_list.append(item)
+    text = rotate_int(new_list, -rotation_amount)
+    return convert_int(text)
+def hash_transform(text: list[int], base: int) -> list[int]:
+    """
+    This function consumes a list of int and a base that is an int.
+    
+    Args:
+    text (list[int]): A message that we want to convert to a list of int.
+    base (int): The amount we want the exponent to be.
+    
+    Returns:
+    list[int]: The list of int transformed into a hash. 
+    """
+    new_list = []
+    count = 0
+    for item in text:
+        new_value = (count + base) ** (item)
+        new_list.append(new_value)
+        count = count + 1   
+    return new_list
+def hash_text(text: str, base: int, hash_size: int) -> int:
+    """
+    This function consumes a text, base, and hash_size
+    
+    Args:
+    text (str): A message that we want to turn into a hash.
+    base (int): The amount we want the exponent to be when we multiply.
+    hash_size (int): The size we want the total value of the hash to be. 
+    Returns:
+    int: The transformed message in a hash. 
+    """
+    message = convert_str(text)
+    message = hash_transform(message, base)
+    sum_of_message = sum(message)
+    return sum_of_message % hash_size
+# 4) Define main
+def main()-> str:
+    """
+    This function consumes all of the other functions.
+    
+    Returns:
+    str: The user's input that has been encrypted or decrypted. 
+    """
+    base=31
+    hash_size=1000000000
+    rotation_amount=2
+    user_input = input("Insert encrypt or decrypt:")
+    message = input("Insert text here:")
+    u_input = hash_text(message, base, hash_size)
+    if user_input == "encrypt":
+        user_input1 = encrypt_text(message, rotation_amount)
+        print(user_input1)
+        print(u_input)
+    elif user_input == "decrypt":
+        user_input1 = decrypt_text(message, rotation_amount)
+        hash = input("Hash value here:")
+        if int(hash) == hash_text(user_input1, base, hash_size):
+            print(user_input1)
+        else:
+            print("error")
+        
+        
+assert_equal(hash_text("Hey", 2, 5), 3)
+assert_equal(hash_text("Hi", 3, 5), 0)
+assert_equal(encrypt_text("hello", 1), "ifmmp")
+assert_equal(decrypt_text("hi", 3), "ef")
+
+#assert_equal(main("encrypt", 2, 31, 1000000000), "gpet{rv")
+#assert_equal(main("decrypt", 2, 31, 1000000000), "fget{rv")
+#assert_equal(main("other", 2, 31, 1000000000), "mrfcp")
